@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:14-bullseye
+    container_name: postgres
+    ports:
+      - "5433:5432"    
+    environment: 
+      TZ: Asia/Seoul
+    env_file:
+      - .envs/.local/.postgres
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_data_backups:/backups
+      - ./context-files/postgres/ddl:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  local_postgres_data: {}
+  local_postgres_data_backups: {}
