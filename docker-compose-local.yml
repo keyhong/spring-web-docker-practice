@@ -1,25 +1,53 @@
 version: "3.8"
 services:
   postgres:
-    image: postgres:14-bullseye
+    image: postgres:14.10-bullseye
     container_name: postgres
-    ports:
-      - "5433:5432"    
+    # ports:
+    #   - "5432:5432"
+    expose:
+      - "5432"
+    env_file:
+      - .envs/.local/.postgres       
     environment: 
       TZ: Asia/Seoul
-    env_file:
-      - .envs/.local/.postgres
+      PGDATA: /data
     volumes:
-      - local_postgres_data:/var/lib/postgresql/data
-      - local_postgres_data_backups:/backups
+      - local_postgres_data:/data
       - ./context-files/postgres/ddl:/docker-entrypoint-initdb.d
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
       timeout: 10s
-      retries: 10
+      retries: 5
       start_period: 30s
+    networks:
+      - spring-web
+
+  spring:
+    build:
+      context: .
+      dockerfile: ./docker/local/spring/Dockerfile
+    image: keyhong/spring-app:v1.0.0
+    container_name: spring
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: ["sh", "start"]
+    networks:
+      - spring-web
+
+networks:
+    spring-web:
+        driver: bridge
 
 volumes:
   local_postgres_data: {}
-  local_postgres_data_backups: {}

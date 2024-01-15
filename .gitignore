@@ -1,3 +1,6 @@
+.envs/*
+!.envs/.local/
+
 HELP.md
 .gradle
 build/
