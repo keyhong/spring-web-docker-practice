@@ -40,7 +40,7 @@ up: docker compose -f docker-compose-local.yml up -d
 
 - 모든 docker container 제거
 
-```
+```make
 $ make down 
 
 down: docker compose -f docker-compose-local.yml down
